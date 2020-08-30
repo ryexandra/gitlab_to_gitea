@@ -26,6 +26,9 @@ GITLAB_TOKEN = 'gitlab token'
 GITLAB_ADMIN_USER = 'admin username'
 GITLAB_ADMIN_PASS = 'admin password'
 
+# Setting this should import only a single group's projects and members
+GITLAB_GROUP = None
+
 GITEA_URL = 'https://gitea.dest.com'
 GITEA_TOKEN = 'gitea token'
 #######################
@@ -529,9 +532,16 @@ def _import_group_members(gitea_api: pygitea, members: [gitlab.v4.objects.GroupM
 #
 
 def import_users_groups(gitlab_api: gitlab.Gitlab, gitea_api: pygitea, notify=False):
-    # read all users
-    users: [gitlab.v4.objects.User] = gitlab_api.users.list(all=True)
-    groups: [gitlab.v4.objects.Group] = gitlab_api.groups.list(all=True)
+
+    if GITLAB_GROUP:
+        group = gitlab_api.groups.get(GITLAB_GROUP)
+
+        groups: [gitlab.v4.objects.Group] = [group]
+        users: [gitlab.v4.objects.User] = group.members.list()
+    else:
+        # read all users
+        users: [gitlab.v4.objects.User] = gitlab_api.users.list(all=True)
+        groups: [gitlab.v4.objects.Group] = gitlab_api.groups.list(all=True)
 
     print("Found " + str(len(users)) + " gitlab users as user " + gitlab_api.user.username)
     print("Found " + str(len(groups)) + " gitlab groups as user " + gitlab_api.user.username)
@@ -544,8 +554,13 @@ def import_users_groups(gitlab_api: gitlab.Gitlab, gitea_api: pygitea, notify=Fa
 
 
 def import_projects(gitlab_api: gitlab.Gitlab, gitea_api: pygitea):
-    # read all projects and their issues
-    projects: gitlab.v4.objects.Project = gitlab_api.projects.list(all=True)
+
+    if GITLAB_GROUP:
+        group = gitlab_api.groups.get(GITLAB_GROUP)
+        projects: gitlab.v4.objects.Project = group.projects.list()
+    else:
+        # read all projects and their issues
+        projects: gitlab.v4.objects.Project = gitlab_api.projects.list(all=True)
 
     print("Found " + str(len(projects)) + " gitlab projects as user " + gitlab_api.user.username)
 
