@@ -537,7 +537,7 @@ def import_users_groups(gitlab_api: gitlab.Gitlab, gitea_api: pygitea, notify=Fa
         group = gitlab_api.groups.get(GITLAB_GROUP)
 
         groups: [gitlab.v4.objects.Group] = [group]
-        users: [gitlab.v4.objects.User] = group.members.list()
+        users: [gitlab.v4.objects.User] = [gitlab_api.users.get(m.user_id) for m in group.members.list()]
     else:
         # read all users
         users: [gitlab.v4.objects.User] = gitlab_api.users.list(all=True)
