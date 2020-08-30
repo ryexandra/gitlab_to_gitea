@@ -558,7 +558,7 @@ def import_projects(gitlab_api: gitlab.Gitlab, gitea_api: pygitea):
 
     if GITLAB_GROUP:
         group = gitlab_api.groups.get(GITLAB_GROUP)
-        projects: T.List[gitlab.v4.objects.Project] = group.projects.list()
+        projects: T.List[gitlab.v4.objects.Project] = [gitlab_api.projects.get(p.id) for p in group.projects.list()]
     else:
         # read all projects and their issues
         projects: T.List[gitlab.v4.objects.Project] = gitlab_api.projects.list(all=True)
